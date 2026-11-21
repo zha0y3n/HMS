@@ -38,3 +38,4 @@ htmlcov/
 
 # uv cache (保留 uv.lock)
 .uv/
+.python-version

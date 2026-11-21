@@ -64,7 +64,7 @@ def confirm_checkin(order_id: int):
 
 
 # 更新extra_fee并返回新金额
-def add_extra_fee(order_id: int, amount: int) -> int:
+def add_extra_fee(order_id: int, amount: float) -> int:
     if amount <= 0:
         raise ValueError
 
