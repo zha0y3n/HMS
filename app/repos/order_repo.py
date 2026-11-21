@@ -75,7 +75,7 @@ def complete_checkout(
     )
 
 
-# 模糊搜索：传入用户姓名 or 手机号 or 房间号，返回最新订单结果
+# 模糊搜索：传入住客姓名 or 手机号 or 房间号，返回最新订单结果
 def search(conn: Connection, keyword: str) -> list[Row]:
     # 两边的%是SQL通配符，加上后能够匹配任意位置包含keyword的字符串
     pattern = f"%{keyword}%"
