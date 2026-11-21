@@ -53,6 +53,16 @@ def checkout(order_id: int) -> tuple[Response, int]:
         return jsonify({"msg": str(e)}), 400
 
 
+# 删除订单
+@order_bp.route("/<int:order_id>", methods=["DELETE"])
+def delete_order(order_id: int) -> tuple[Response, int]:
+    try:
+        order_service.delete_order(order_id)
+        return jsonify({"msg": "订单删除成功"}), 200
+    except ValueError as e:
+        return jsonify({"msg": str(e)}), 400
+
+
 # 模糊搜索：查询订单与住客档案
 @order_bp.route("", methods=["GET"])
 def search_orders() -> tuple[Response, int]:

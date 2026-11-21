@@ -95,50 +95,57 @@ onMounted(() => {
     :theme="isDark ? darkTheme : null"
     :locale="zhCN"
     :date-locale="dateZhCN"
+    class="h-full w-full"
   >
-    <div class="flex h-screen w-screen overflow-hidden bg-paper-50 dark:bg-obsidian-950 text-neutral-800 dark:text-neutral-100 font-sans selection:bg-neutral-800 selection:text-white dark:selection:bg-neutral-200 dark:selection:text-black">
+    <div class="flex h-full w-full overflow-hidden bg-paper-50 dark:bg-obsidian-950 text-neutral-800 dark:text-neutral-100 font-sans selection:bg-neutral-800 selection:text-white dark:selection:bg-neutral-200 dark:selection:text-black">
       <!-- Minimalist Linear-style Sidebar -->
       <Sidebar
         v-model:active-tab="activeTab"
         v-model:collapsed="sidebarCollapsed"
         :is-dark="isDark"
-        :occupancy-rate="stats?.occupancy_rate"
         @toggle-theme="toggleTheme"
       />
 
       <!-- Main Content Stage -->
-      <main class="flex-1 flex flex-col h-full min-w-0 bg-white/40 dark:bg-obsidian-900/30">
+      <main class="flex-1 min-w-0 flex flex-col h-full overflow-hidden bg-white/40 dark:bg-obsidian-900/30 transition-colors duration-200">
         <!-- Global Error Banner (if backend unreachable) -->
-        <div
-          v-if="globalError"
-          class="px-6 py-2 bg-rose-500/10 border-b border-rose-500/20 text-rose-500 text-xs font-mono flex items-center justify-between"
-        >
-          <span>后端接口通信异常：{{ globalError }}（请确保后端服务 http://127.0.0.1:8100 处于运行状态）</span>
-          <button class="underline hover:text-rose-400" @click="loadData">重试</button>
-        </div>
+        <Transition name="fade-slide">
+          <div
+            v-if="globalError"
+            class="px-6 py-2 bg-rose-500/10 border-b border-rose-500/20 text-rose-500 text-xs font-mono flex items-center justify-between"
+          >
+            <span>服务连接失败：{{ globalError }}</span>
+            <button class="underline hover:text-rose-400 transition-colors" @click="loadData">重试</button>
+          </div>
+        </Transition>
 
-        <!-- Dynamic Views -->
-        <RoomsView
-          v-if="activeTab === 'rooms'"
-          :rooms="roomsWithOrders"
-          :stats="stats"
-          :loading="loading"
-          @refresh="loadData"
-        />
+        <!-- Dynamic Views with Smooth Page Transition -->
+        <Transition name="page-fade" mode="out-in">
+          <RoomsView
+            v-if="activeTab === 'rooms'"
+            key="rooms"
+            :rooms="roomsWithOrders"
+            :stats="stats"
+            :loading="loading"
+            @refresh="loadData"
+          />
 
-        <OrdersView
-          v-else-if="activeTab === 'orders'"
-          :orders="orders"
-          :loading="loading"
-          @refresh="loadData"
-        />
+          <OrdersView
+            v-else-if="activeTab === 'orders'"
+            key="orders"
+            :orders="orders"
+            :loading="loading"
+            @refresh="loadData"
+          />
 
-        <SettingsView
-          v-else-if="activeTab === 'settings'"
-          :rooms="rawRooms"
-          :loading="loading"
-          @refresh="loadData"
-        />
+          <SettingsView
+            v-else-if="activeTab === 'settings'"
+            key="settings"
+            :rooms="rawRooms"
+            :loading="loading"
+            @refresh="loadData"
+          />
+        </Transition>
       </main>
     </div>
   </n-config-provider>

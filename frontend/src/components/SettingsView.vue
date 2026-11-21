@@ -75,7 +75,7 @@ async function handleCreateRoom() {
     <header class="h-14 px-6 border-b border-neutral-200/50 dark:border-neutral-800/50 flex items-center justify-between flex-shrink-0">
       <div class="flex items-center space-x-3">
         <h1 class="text-sm font-semibold tracking-wide text-neutral-900 dark:text-neutral-100 font-mono">
-          客房与配置 (SETTINGS)
+          客房设置
         </h1>
         <span class="text-xs text-neutral-400 font-mono">
           共 {{ rooms.length }} 间客房
@@ -124,24 +124,24 @@ async function handleCreateRoom() {
           <div class="col-span-2 text-right">
             <span
               v-if="room.status === 'available'"
-              class="inline-flex items-center text-[10px] text-emerald-600 dark:text-emerald-400"
+              class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-sans font-medium bg-emerald-50 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-400"
             >
               <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 mr-1.5"></span>
-              空闲可用
+              空闲
             </span>
             <span
               v-else-if="room.status === 'reserved'"
-              class="inline-flex items-center text-[10px] text-amber-600 dark:text-amber-400"
+              class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-sans font-medium bg-amber-50 text-amber-700 dark:bg-amber-500/15 dark:text-amber-400"
             >
               <span class="w-1.5 h-1.5 rounded-full bg-amber-500 mr-1.5"></span>
-              已预订
+              预订
             </span>
             <span
               v-else
-              class="inline-flex items-center text-[10px] text-sky-600 dark:text-sky-400"
+              class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-sans font-medium bg-red-50 text-red-700 dark:bg-red-500/15 dark:text-red-400"
             >
-              <span class="w-1.5 h-1.5 rounded-full bg-sky-500 mr-1.5"></span>
-              在住中
+              <span class="w-1.5 h-1.5 rounded-full bg-red-500 mr-1.5"></span>
+              在住
             </span>
           </div>
         </div>
@@ -153,14 +153,14 @@ async function handleCreateRoom() {
             @click="startAdd"
           >
             <Plus class="w-3.5 h-3.5 group-hover:scale-110 transition-transform" />
-            <span class="font-mono">+ New Room (录入新客房)</span>
+            <span>新增客房</span>
           </button>
         </div>
 
         <!-- Inline Adding Form Row -->
         <div
           v-else
-          class="border-b border-neutral-200/60 dark:border-neutral-800/60 bg-neutral-50/70 dark:bg-neutral-900/60 p-3 space-y-2.5 transition-all"
+          class="animate-panel-in border-b border-neutral-200/60 dark:border-neutral-800/60 bg-neutral-50/70 dark:bg-neutral-900/60 p-3 space-y-2.5 transition-all"
         >
           <div class="grid grid-cols-12 gap-3 items-center">
             <div class="col-span-3">

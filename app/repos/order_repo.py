@@ -75,6 +75,11 @@ def complete_checkout(
     )
 
 
+# 按订单id删除某条订单
+def delete_by_id(conn: Connection, order_id: int):
+    conn.execute("DELETE FROM orders WHERE id = ?", (order_id,))
+
+
 # 模糊搜索：传入住客姓名 or 手机号 or 房间号，返回最新订单结果
 def search(conn: Connection, keyword: str) -> list[Row]:
     # 两边的%是SQL通配符，加上后能够匹配任意位置包含keyword的字符串

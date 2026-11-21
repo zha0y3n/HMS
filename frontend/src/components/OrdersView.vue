@@ -8,6 +8,7 @@ import {
   Receipt,
   LogOut,
   UserCheck,
+  Trash2,
   CheckCircle2,
   AlertCircle,
 } from 'lucide-vue-next'
@@ -27,9 +28,10 @@ const searchKeyword = ref('')
 const selectedStatus = ref<'ALL' | 'reserved' | 'checked_in' | 'completed'>('ALL')
 const expandedOrderId = ref<number | null>(null)
 
-// Extra fee & checkout state
+// Extra fee, checkout & delete state
 const extraAmount = ref<number | ''>('')
 const actionLoading = ref(false)
+const confirmingDeleteId = ref<number | null>(null)
 const orderMessage = ref<{ orderId: number; type: 'success' | 'error'; text: string } | null>(null)
 
 // Filtered orders
@@ -56,6 +58,7 @@ function toggleExpand(order: Order) {
   } else {
     expandedOrderId.value = order.id
     orderMessage.value = null
+    confirmingDeleteId.value = null
     extraAmount.value = ''
   }
 }
@@ -118,6 +121,21 @@ async function handleFinalCheckout(order: Order) {
     actionLoading.value = false
   }
 }
+
+async function handleDeleteOrder(order: Order) {
+  actionLoading.value = true
+  orderMessage.value = null
+  try {
+    await api.deleteOrder(order.id)
+    confirmingDeleteId.value = null
+    expandedOrderId.value = null
+    emit('refresh')
+  } catch (err) {
+    orderMessage.value = { orderId: order.id, type: 'error', text: extractErrorMessage(err) }
+  } finally {
+    actionLoading.value = false
+  }
+}
 </script>
 
 <template>
@@ -126,7 +144,7 @@ async function handleFinalCheckout(order: Order) {
     <header class="h-14 px-6 border-b border-neutral-200/50 dark:border-neutral-800/50 flex items-center justify-between flex-shrink-0">
       <div class="flex items-center space-x-4">
         <h1 class="text-sm font-semibold tracking-wide text-neutral-900 dark:text-neutral-100 font-mono">
-          订单流水与住客客历 (ORDERS & GUEST HISTORY)
+          订单
         </h1>
         <span class="text-xs text-neutral-400 font-mono">
           记录共 {{ orders.length }} 条
@@ -193,9 +211,9 @@ async function handleFinalCheckout(order: Order) {
         <!-- Table Header Row -->
         <div class="grid grid-cols-12 py-2 px-3 text-[11px] font-mono uppercase tracking-wider text-neutral-400 dark:text-neutral-500 border-b border-neutral-200/40 dark:border-neutral-800/40 select-none">
           <div class="col-span-1">单号</div>
-          <div class="col-span-2">房号 / 房型</div>
-          <div class="col-span-3">住客姓名 / 电话</div>
-          <div class="col-span-2">入住天数 / 杂费</div>
+          <div class="col-span-2">客房信息</div>
+          <div class="col-span-3">住客信息</div>
+          <div class="col-span-2">住宿时长</div>
           <div class="col-span-2">状态</div>
           <div class="col-span-2 text-right">下单时间</div>
         </div>
@@ -208,20 +226,20 @@ async function handleFinalCheckout(order: Order) {
             @click="toggleExpand(order)"
           >
             <!-- 订单号 -->
-            <div class="col-span-1 text-neutral-400">
+            <div class="col-span-1 text-neutral-400 tabular-nums">
               #{{ order.id }}
             </div>
 
-            <!-- 房号 / 房型 -->
-            <div class="col-span-2 font-semibold text-neutral-900 dark:text-neutral-100 flex items-center space-x-1.5">
+            <!-- 房号与房型 -->
+            <div class="col-span-2 font-semibold text-neutral-900 dark:text-neutral-100 flex items-center space-x-2 tabular-nums">
               <span>{{ order.room_number }}</span>
               <span class="font-normal font-sans text-[11px] text-neutral-500">{{ order.room_type }}</span>
             </div>
 
-            <!-- 住客姓名 / 电话 -->
-            <div class="col-span-3">
-              <span class="font-semibold font-sans text-neutral-800 dark:text-neutral-200 mr-2">{{ order.guest_name }}</span>
-              <span class="text-neutral-400 text-[11px]">{{ order.phone }}</span>
+            <!-- 住客姓名与电话 -->
+            <div class="col-span-3 flex items-center space-x-2">
+              <span class="font-semibold font-sans text-neutral-800 dark:text-neutral-200">{{ order.guest_name }}</span>
+              <span class="text-neutral-400 text-[11px] tabular-nums">{{ order.phone }}</span>
             </div>
 
             <!-- 入住天数 / 杂费 -->
@@ -268,7 +286,7 @@ async function handleFinalCheckout(order: Order) {
           <!-- Inline Expanded Detail & Operations Zone -->
           <div
             v-if="expandedOrderId === order.id"
-            class="border-b border-neutral-200/60 dark:border-neutral-800/60 bg-neutral-50/70 dark:bg-neutral-900/70 p-4 transition-all"
+            class="animate-panel-in border-b border-neutral-200/60 dark:border-neutral-800/60 bg-neutral-50/70 dark:bg-neutral-900/70 p-4 transition-all"
           >
             <!-- Details Strip -->
             <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 text-xs font-mono pb-3 border-b border-neutral-200/40 dark:border-neutral-800/40">
@@ -281,7 +299,7 @@ async function handleFinalCheckout(order: Order) {
                 <span class="text-neutral-800 dark:text-neutral-200">{{ order.phone }}</span>
               </div>
               <div>
-                <span class="text-neutral-400 block text-[10px] uppercase">当前杂费 / 结算总计</span>
+                <span class="text-neutral-400 block text-[10px] uppercase">费用明细</span>
                 <span class="text-neutral-800 dark:text-neutral-200 font-semibold">
                   {{ order.status === 'completed' ? `总计 ¥${Number(order.total_amount).toFixed(2)}` : `杂费 ¥${Number(order.extra_fee).toFixed(2)}` }}
                 </span>
@@ -340,9 +358,6 @@ async function handleFinalCheckout(order: Order) {
 
             <!-- Operations for Reserved Orders -->
             <div v-else-if="order.status === 'reserved'" class="pt-3 flex items-center justify-between">
-              <span class="text-xs text-neutral-500">
-                此订单处于预订锁定状态，客人到店后可直接转为在住。
-              </span>
               <button
                 class="px-3.5 py-1.5 text-xs font-mono font-medium rounded bg-amber-600 text-white hover:bg-amber-700 transition-colors disabled:opacity-50 flex items-center space-x-1.5"
                 :disabled="actionLoading"
@@ -355,9 +370,42 @@ async function handleFinalCheckout(order: Order) {
 
             <!-- Completed Summary Receipt -->
             <div v-else class="pt-2 text-xs font-mono text-neutral-500 flex items-center space-x-3">
-              <span>该订单已于结算后归档</span>
-              <span class="text-neutral-300 dark:text-neutral-700">|</span>
               <span>最终核算总金额：¥{{ order.total_amount ? Number(order.total_amount).toFixed(2) : '0.00' }}</span>
+            </div>
+
+            <!-- Delete Order Bar -->
+            <div class="pt-3 mt-3 border-t border-neutral-200/40 dark:border-neutral-800/40 flex items-center justify-end">
+              <div v-if="confirmingDeleteId !== order.id">
+                <button
+                  type="button"
+                  class="inline-flex items-center space-x-1 text-xs font-mono text-neutral-400 hover:text-rose-600 dark:hover:text-rose-400 transition-colors"
+                  :disabled="actionLoading"
+                  @click="confirmingDeleteId = order.id"
+                >
+                  <Trash2 class="w-3.5 h-3.5" />
+                  <span>删除订单</span>
+                </button>
+              </div>
+              <div v-else class="flex items-center space-x-2 text-xs font-mono">
+                <span class="text-rose-500">
+                  {{ order.status === 'completed' ? '确认删除该历史订单？' : '删除将同步释放关联房间，确认删除？' }}
+                </span>
+                <button
+                  type="button"
+                  class="px-2 py-1 text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 transition-colors"
+                  @click="confirmingDeleteId = null"
+                >
+                  取消
+                </button>
+                <button
+                  type="button"
+                  class="px-2.5 py-1 rounded bg-rose-600 text-white hover:bg-rose-700 transition-colors disabled:opacity-50"
+                  :disabled="actionLoading"
+                  @click="handleDeleteOrder(order)"
+                >
+                  确认删除
+                </button>
+              </div>
             </div>
 
             <!-- Feedback Message -->

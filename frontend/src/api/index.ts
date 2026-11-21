@@ -82,4 +82,10 @@ export const api = {
     const res = await client.post<CheckoutResult>(`/orders/${orderId}/checkout`)
     return res.data
   },
+
+  // 删除订单
+  async deleteOrder(orderId: number): Promise<{ msg: string }> {
+    const res = await client.delete<{ msg: string }>(`/orders/${orderId}`)
+    return res.data
+  },
 }

@@ -103,6 +103,19 @@ def checkout(order_id: int) -> dict:
         }
 
 
+# 删除订单（若为预订中或在住中订单，同步释放关联房间为空闲状态）
+def delete_order(order_id: int):
+    with get_db() as conn:
+        order = order_repo.find_by_id(conn, order_id)
+        if not order:
+            raise ValueError("订单不存在")
+
+        if order["status"] in ("reserved", "checked_in"):
+            room_repo.update_status(conn, order["room_id"], "available")
+
+        order_repo.delete_by_id(conn, order_id)
+
+
 # 调用模糊搜索
 def search_orders(keyword: str) -> list[dict]:
     with get_db() as conn:
