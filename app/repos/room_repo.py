@@ -1,7 +1,7 @@
-from sqlite3 import Connection, Row
-
-# db.py已指定conn.row_factory = sqlite3.Row
 # 房间属性: id, number, type, price, status
+# db.py已指定conn.row_factory = sqlite3.Row
+
+from sqlite3 import Connection, Row
 
 
 # 查询rooms表中的所有房间属性，并按房间号升序返回
@@ -31,4 +31,4 @@ def find_first_available(conn: Connection, room_type: str) -> Row | None:
 
 # 依照room_id更新该房间的status
 def update_status(conn: Connection, room_id: int, status: str):
-    pass
+    conn.execute("UPDATE rooms SET status = ? WHERE id = ?", (status, room_id))

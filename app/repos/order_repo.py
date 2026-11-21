@@ -22,9 +22,23 @@ def insert(
     return cur.lastrowid
 
 
-# 按订单id查询首个匹配到的订单
+# 按订单id查询首条订单
 def find_by_id(conn: Connection, order_id: int) -> Row | None:
     return conn.execute("SELECT * FROM orders WHERE id = ?", (order_id,)).fetchone()
+
+
+# 按订单id查询首条attribute = value的订单
+def find_any_by_id(
+    conn: Connection, order_id: int, attribute: str, value: str
+) -> Row | None:
+    # 仅支持白名单，防止SQL注入
+    ALLOWED_ATTRIBUTES = ["status", "room_id", "created_at"]
+    if attribute not in ALLOWED_ATTRIBUTES:
+        raise ValueError("不允许的查询参数")
+
+    return conn.execute(
+        f"SELECT * FROM orders WHERE id = ? AND {attribute} = ?", (order_id, value)
+    ).fetchone()
 
 
 # 按订单id查询某条订单的完整信息，并查出该订单关联的房间单价与房间号

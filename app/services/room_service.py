@@ -19,9 +19,12 @@ def get_room_with_stats() -> dict:
         return {"stats": stats, "rooms": rooms}
 
 
-def create_room(number, room_type, price):
+# 录入某房间号的关联属性
+# 业务层直接对接外部输入，传进来的都是str类型
+def create_room(number: str, room_type: str, price: str):
     try:
         with get_db() as conn:
-            room_repo.insert(conn, number, room_type, price)
-    except:
-        raise ValueError("room")
+            room_repo.insert(conn, number, room_type, float(price))
+    # 违反唯一性约束时
+    except sqlite3.IntegrityError:
+        raise ValueError("房间号已存在")

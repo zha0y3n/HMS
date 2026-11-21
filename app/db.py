@@ -19,6 +19,7 @@ def get_db():
         conn.close()
 
 
+# 初始化数据库
 def init_db():
     with get_db() as conn:
         conn.executescript("""
