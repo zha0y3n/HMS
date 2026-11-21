@@ -10,7 +10,7 @@ class OrderData(TypedDict):
     id_card: str
     phone: str
     mode: str
-    days: NotRequired[int | str]
+    days: NotRequired[int]
 
 
 # 根据客人意图创建订单，返回提示信息、订单号和房间号
@@ -27,6 +27,11 @@ def create_order(data: OrderData) -> dict:
         if not room:
             raise ValueError(f"{data["room_type"]}已满")
 
+        # 校验days
+        days = data.get("days", 1)
+        if type(days) is not int or days <= 0:
+            raise ValueError
+
         # 查询到可用房后，插入该条订单信息
         order_id = order_repo.insert(
             conn,
@@ -34,7 +39,7 @@ def create_order(data: OrderData) -> dict:
             guest_name=data["guest_name"],
             id_card=data["id_card"],
             phone=data["phone"],
-            days=data.get("days", 1),
+            days=days,
             status=order_status,
             created_at=datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
         )
@@ -54,8 +59,8 @@ def confirm_checkin(order_id: int):
         order = order_repo.find_by_id(conn, order_id)
         if not order or order["status"] != "reserved":
             raise ValueError("订单不存在或非预订状态")
-    order_repo.update_status(conn, order_id, "checked_in")
-    room_repo.update_status(conn, order["room_id"], "occupied")
+        order_repo.update_status(conn, order_id, "checked_in")
+        room_repo.update_status(conn, order["room_id"], "occupied")
 
 
 # 更新extra_fee并返回新金额

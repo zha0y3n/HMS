@@ -13,7 +13,7 @@ def list_room() -> Response:
 
 
 # 新增客房
-@room_bp.route("", methods=["GET"])
+@room_bp.route("", methods=["POST"])
 def add_room() -> tuple[Response, int]:
     data = request.json
     try:

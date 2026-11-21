@@ -46,7 +46,6 @@ def add_extra_fee(order_id: int) -> tuple[Response, int]:
 # 退房与结算
 @order_bp.route("/<int:order_id>/checkout", methods=["POST"])
 def checkout(order_id: int) -> tuple[Response, int]:
-    days = (request.json or {}).get("days")
     try:
         res = order_service.checkout(order_id)
         return jsonify(res), 201

@@ -59,7 +59,7 @@ def update_status(conn: Connection, order_id: int, status: str):
 
 
 # 客人消费后更新extra_fee金额
-def add_extra_fee(conn: Connection, order_id: int, amount: int):
+def add_extra_fee(conn: Connection, order_id: int, amount: float):
     conn.execute(
         "UPDATE orders SET extra_fee = extra_fee + ? WHERE id = ?", (amount, order_id)
     )
@@ -67,7 +67,7 @@ def add_extra_fee(conn: Connection, order_id: int, amount: int):
 
 # 订单完成后更新订单状态并结算总金额
 def complete_checkout(
-    conn: Connection, order_id: int, spend_days: int, total_amount: int
+    conn: Connection, order_id: int, spend_days: int, total_amount: float
 ):
     conn.execute(
         "UPDATE orders SET status = 'completed', days = ?, total_amount = ? WHERE id = ?",
