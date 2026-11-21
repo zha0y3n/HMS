@@ -1,0 +1,40 @@
+# Python
+__pycache__/
+*.py[cod]
+*.so
+
+# Venv
+.venv/
+venv/
+
+# Build
+build/
+dist/
+*.egg-info/
+
+# Test / Lint
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Env
+.env
+.env.*
+!.env.example
+
+# DB
+*.db
+*.sqlite3
+
+# Logs
+*.log
+
+# IDE / OS
+.idea/
+.vscode/
+.DS_Store
+
+# uv cache (保留 uv.lock)
+.uv/
